@@ -113,6 +113,16 @@ def load_liq_1s(
     )
 
 
+def data_range_us(sym: str) -> tuple[int, int]:
+    """Min/max trade timestamp (µs) from parquet."""
+    p = paths_for_symbol(sym)["trades"]
+    row = pl.scan_parquet(str(p)).select(
+        pl.col("timestamp").min().alias("t0"),
+        pl.col("timestamp").max().alias("t1"),
+    ).collect()
+    return int(row["t0"][0]), int(row["t1"][0])
+
+
 def data_inventory(symbols: tuple[str, ...]) -> pl.DataFrame:
     rows = []
     for sym in symbols:
