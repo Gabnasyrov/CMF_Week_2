@@ -66,13 +66,15 @@ CMF_Week_2/
 
 ## Key results (validation, τ=30s)
 
-| Symbol | Strategy | Score (bps) | PnL_kept | Turnover/day | Constraint |
-|--------|----------|-------------|----------|--------------|------------|
-| BTC | lgbm_nk_30s | **+0.065** | −0.108 | 5.98M | ✓ |
-| BTC | baseline | 0.000 | −0.173 | 12.2B | ✓ |
-| ETH | lgbm_nk_30s | **+0.218** | +0.238 | −0.213 | 6.32M | ✓ |
-| ETH | baseline | 0.000 | +0.020 | — | 12.2B | ✓ |
+PnL in **bps**, turnover in **USD/day** (always positive).
 
-All reported strategies meet the **500k USD/day** turnover constraint.
+| Symbol | Strategy | Score (bps) | PnL_kept (bps) | PnL_filtered (bps) | Turnover kept (USD/day) | OK |
+|--------|----------|-------------|----------------|--------------------|-------------------------|-----|
+| BTC | lgbm_nk_30s | **+0.065** | −0.108 | −0.236 | **$5.98B** | ✓ |
+| BTC | baseline | 0.000 | −0.173 | — | $12.16B | ✓ |
+| ETH | lgbm_nk_30s | **+0.218** | +0.238 | −0.213 | **$6.32B** | ✓ |
+| ETH | baseline | 0.000 | +0.020 | — | $12.21B | ✓ |
+
+`PnL_filtered < 0` is expected (we filter bad trades). Turnover ≥ $500k/day — satisfied.
 
 See `results/REPORT.md` and the notebook for details.

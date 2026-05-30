@@ -22,16 +22,18 @@ Build a **simple baseline** trade filter on Binance maker flow using liquidation
 
 ## Key results (validation, Binance trades, τ=30s)
 
-From `baseline_metrics_full.csv`:
+From `baseline_metrics_full.csv` (PnL in **bps**, turnover in **USD/day**):
 
-| Symbol | Strategy | Score (bps) | PnL_kept | PnL_filtered | Turnover/day | OK |
-|--------|----------|-------------|----------|--------------|--------------|-----|
-| BTC | lgbm_nk_30s | **+0.065** | −0.108 | −0.236 | 5.98M | ✓ |
-| BTC | baseline | 0.000 | −0.173 | — | 12.2B | ✓ |
-| ETH | lgbm_nk_30s | **+0.218** | +0.238 | −0.213 | 6.32M | ✓ |
-| ETH | baseline | 0.000 | +0.020 | — | 12.2B | ✓ |
+| Symbol | Strategy | Score (bps) | PnL_kept (bps) | PnL_filtered (bps) | Turnover kept (USD/day) | OK |
+|--------|----------|-------------|----------------|--------------------|-------------------------|-----|
+| BTC | lgbm_nk_30s | **+0.065** | −0.108 | −0.236 | **$5.98B** | ✓ |
+| BTC | baseline | 0.000 | −0.173 | — | $12.16B | ✓ |
+| ETH | lgbm_nk_30s | **+0.218** | +0.238 | −0.213 | **$6.32B** | ✓ |
+| ETH | baseline | 0.000 | +0.020 | — | $12.21B | ✓ |
 
-**Turnover constraint (500k$/day):** met for all reported strategies.
+**Turnover is always positive.** Minus in `PnL_filtered` is normal: filtered trades are the toxic ones we remove.
+
+**Turnover constraint (≥$500k/day):** met for all rows.
 
 ## Deliverables
 
