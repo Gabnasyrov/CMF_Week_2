@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+.DS_Store
+data/*.parquet
+data/binance_*/
+data/bybit_*/
+*.zip
+.env
