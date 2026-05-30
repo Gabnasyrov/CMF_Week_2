@@ -70,7 +70,8 @@ CMF_Week_2/
 |--------|----------|-------------|----------|--------------|------------|
 | BTC | lgbm_nk_30s | **+0.065** | −0.108 | 5.98M | ✓ |
 | BTC | baseline | 0.000 | −0.173 | 12.2B | ✓ |
-| ETH | lgbm_nk_30s | see CSV | see CSV | see CSV | ✓ |
+| ETH | lgbm_nk_30s | **+0.218** | +0.238 | −0.213 | 6.32M | ✓ |
+| ETH | baseline | 0.000 | +0.020 | — | 12.2B | ✓ |
 
 All reported strategies meet the **500k USD/day** turnover constraint.
 
