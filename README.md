@@ -1,79 +1,65 @@
 # CMF Week 2 — Liquidation trade filter baseline
 
-**Course task:** build a simple baseline that filters Binance maker trades using liquidation context, evaluate **Score**, **PnL_kept**, **PnL_filtered**, **turnover/day**, with **≥500k USD/day** kept turnover.
+**Course task:** filter Binance maker trades using liquidation context; report **Score**, **PnL**, **turnover/day** (≥500k USD).
 
-## Quick start
+## Quick start (fresh clone)
 
 ```bash
-pip install -r requirements.txt
+pip install -e ".[dev]"
+export LIQUIDATION_DATA_ROOT=/path/to/parquet   # raw + enriched/ subdirs
+python -m cmf_week2.cli.run_baseline --symbol btcusdt --max-trades 50000
+pytest -q
 jupyter notebook notebooks/Weekly_Baseline_Report.ipynb
 ```
 
-**For reviewers:** read [`REVIEWER_GUIDE.md`](REVIEWER_GUIDE.md) first — step-by-step path through inputs, LGBM, metrics, conclusions.
+Entry points: `cmf-run-baseline`, `cmf-run-all`.
 
-The notebook runs **without raw data** using bundled results in `results/`.
+**Reviewers:** [`REVIEWER_GUIDE.md`](REVIEWER_GUIDE.md) → [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md).
+
+Notebook runs **without raw data** using bundled `results/`.
 
 ## Data (~6 months, not in git)
 
-Parquet streams (`timestamp` in **microseconds UTC**):
+Parquet streams (`timestamp` μs UTC):
 
-- Binance: trades, book tickers, liquidations — `btcusdt`, `ethusdt` perps
-- Bybit: liquidations (shift **+200 ms** before feature join)
-
-```bash
-export LIQUIDATION_DATA_ROOT=$(pwd)/data
-python scripts/run_baseline.py --symbol btcusdt --max-trades 500000
-```
+- Binance: trades, book tickers, liquidations — `btcusdt`, `ethusdt`
+- Bybit: liquidations (+200 ms before join)
+- LGBM panel: `enriched/binance_bbo/`, etc. under same root
 
 ## Metrics
 
 | Metric | Definition |
 |--------|------------|
-| **PnL_all(τ)** | Weighted mean maker markout, all trades |
-| **PnL_kept(τ)** | Mean on kept trades (`f=0`) |
-| **PnL_filtered(τ)** | Mean on filtered trades (`f=1`) |
-| **Score(τ)** | `PnL_kept − PnL_all` — maximize |
+| **Score(τ)** | `PnL_kept − PnL_all` (bps) |
 | **Turnover/day** | `Σ w·(1−f) / days`, `w=min(notional, 100k USD)` |
-| **Constraint** | Turnover/day ≥ **500,000 USD** |
 
-Markout horizons τ ∈ {30, 120, 300} seconds.
+Markout τ ∈ {30, 120, 300}s. Direction forecast h ∈ {1,3,5,30,300}s — see [`docs/FORECAST_HORIZONS.md`](docs/FORECAST_HORIZONS.md).
 
-## Forecast horizons (direction model)
+## Key results
 
-LGBM trained at **h ∈ {1, 3, 5, 30, 300}s**. **5s** hit rate > **30s** (BTC 0.638 vs 0.560). No **10s** model. PnL table uses **30s** filter — [`docs/FORECAST_HORIZONS.md`](docs/FORECAST_HORIZONS.md).
+**Polars baseline** (official split, Feb test): `results/baseline_metrics.csv` — includes bootstrap SE.
 
-## Classifiers
+**LGBM PnL** (50/50 split, full pipeline): `results/baseline_metrics_full.csv` — see METHODOLOGY for `n_days` heterogeneity.
 
-| Strategy | Type |
-|----------|------|
-| `baseline_keep_all` | No filter (Score = 0) |
-| `heuristic_bybit_flow` | Filter extreme \|Bybit L_net_30s\| |
-| `ml_logistic_toxic` | Logistic regression + turnover-calibrated threshold |
-| `lgbm_nk_30s` | LightGBM (full pipeline, bundled in `baseline_metrics_full.csv`) |
+**LGBM direction @ 30s** (`lgbm_direction_metrics.json`):
 
-## Repository layout
+| Symbol | ROC-AUC | Hit rate |
+|--------|---------|----------|
+| BTC | 0.560 | 0.543 |
+| ETH | 0.540 | 0.527 |
+
+Do not confuse **auc_test** with **hit_rate_test**.
+
+## Layout
 
 ```
 CMF_Week_2/
-├── REVIEWER_GUIDE.md       ← start here
-├── TASK.md
-├── docs/                   ← features, LGBM params, baseline, forecast horizons
-├── notebooks/              ← Weekly_Baseline_Report.ipynb
-├── lib/ + scripts/
-└── results/                ← metrics CSV, direction_horizons_reference.json, ROC PNG
+├── pyproject.toml
+├── cmf_week2/           ← installable package
+│   ├── lib/             ← Polars pipeline (fixed)
+│   ├── cli/             ← run_baseline, run_all, plot_lgbm_auc
+│   └── strategies_bundle/
+├── tests/
+├── docs/
+└── results/
 ```
-
-## Key results (validation, τ=30s)
-
-PnL in **bps**, turnover in **USD/day** (always positive).
-
-| Symbol | Strategy | Score (bps) | PnL_kept (bps) | PnL_filtered (bps) | Turnover kept (USD/day) | OK |
-|--------|----------|-------------|----------------|--------------------|-------------------------|-----|
-| BTC | lgbm_nk_30s | **+0.065** | −0.108 | −0.236 | **$5.98B** | ✓ |
-| BTC | baseline | 0.000 | −0.173 | — | $12.16B | ✓ |
-| ETH | lgbm_nk_30s | **+0.218** | +0.238 | −0.213 | **$6.32B** | ✓ |
-| ETH | baseline | 0.000 | +0.020 | — | $12.21B | ✓ |
-
-`PnL_filtered < 0` is expected (we filter bad trades). Turnover ≥ $500k/day — satisfied.
-
-See `results/REPORT.md` and the notebook for details.
