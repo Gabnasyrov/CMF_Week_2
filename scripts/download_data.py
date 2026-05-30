@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Download 6-month parquet archive from Google Drive."""
+"""Extract 6-month parquet archive to data/ (optional; archive not bundled in repo)."""
 
 from __future__ import annotations
 

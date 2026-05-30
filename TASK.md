@@ -11,12 +11,21 @@ Create a simple baseline for filtering Binance perpetual trades:
 
 ## Data
 
-Public dataset: [Google Drive](https://drive.google.com/file/d/1XmxRsElei-vE8Gc5tkKs2wH4FJVRTevS/view)
+~6 months of parquet, **not included in this repository**.
 
-Streams (parquet, `timestamp` in microseconds UTC):
+Streams (`timestamp` in microseconds UTC):
 
-- Binance: trades, book tickers, liquidations (`btcusdt`, `ethusdt`)
-- Bybit: liquidations
+- Binance: trades, book tickers, liquidations (`btcusdt`, `ethusdt` perps)
+- Bybit: liquidations (shift **+200 ms** before joining with Binance)
+
+Expected layout under `data/`:
+
+```
+binance_trades/perp_{btcusdt,ethusdt}.parquet
+binance_booktickers/perp_*.parquet
+binance_liquidations/perp_*.parquet
+bybit_liquidations/{btcusdt,ethusdt}.parquet
+```
 
 ## Markout
 
@@ -42,6 +51,11 @@ Score     = PnL_kept - PnL_all
 Turnover/day = sum(w * (1-f)) / n_days  >= 500_000 USD
 ```
 
+## Direction forecast (LGBM)
+
+Separate from markout τ: model predicts `sign(kalman_mu[t+h] − kalman_mu[t])` at **h ∈ {1, 3, 5, 30, 300}s**.  
+Bundled PnL uses **h=30s** filter. Hit rate @ **5s** is higher than @ 30s; **10s** is not in the training grid — see `docs/FORECAST_HORIZONS.md`.
+
 ## Split
 
 - Train: Dec 2025 – Jan 2026
@@ -54,4 +68,5 @@ Turnover/day = sum(w * (1-f)) / n_days  >= 500_000 USD
 | Report notebook | `notebooks/Weekly_Baseline_Report.ipynb` |
 | Polars pipeline | `lib/`, `scripts/run_baseline.py` |
 | Full metrics CSV | `results/baseline_metrics_full.csv` |
+| Direction horizons | `results/direction_horizons_reference.json` |
 | Summary | `results/REPORT.md`, `README.md` |

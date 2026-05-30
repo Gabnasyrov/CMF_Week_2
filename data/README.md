@@ -1,15 +1,14 @@
 # Parquet data (not in git)
 
-Download from [Google Drive](https://drive.google.com/file/d/1XmxRsElei-vE8Gc5tkKs2wH4FJVRTevS/view):
+Place 6-month archive locally:
 
-```bash
-python ../scripts/download_data.py --out-dir .
+```
+binance_trades/perp_{btcusdt,ethusdt}.parquet
+binance_booktickers/perp_*.parquet
+binance_liquidations/perp_*.parquet
+bybit_liquidations/{btcusdt,ethusdt}.parquet
 ```
 
-Or symlink parent repo data:
+`timestamp`: int64, microseconds UTC. Bybit liquidations: apply **+200 ms** before joining Binance.
 
-```bash
-ln -s ../../data .
-```
-
-See [README.md](../README.md) for layout.
+Set `LIQUIDATION_DATA_ROOT` to this folder. See [README.md](../README.md) for schema.

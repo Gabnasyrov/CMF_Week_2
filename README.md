@@ -13,13 +13,14 @@ jupyter notebook notebooks/Weekly_Baseline_Report.ipynb
 
 The notebook runs **without raw data** using bundled results in `results/`.
 
-## Data (6 months)
+## Data (~6 months, not in git)
 
-Download parquet from Google Drive:  
-https://drive.google.com/file/d/1XmxRsElei-vE8Gc5tkKs2wH4FJVRTevS/view
+Parquet streams (`timestamp` in **microseconds UTC**):
+
+- Binance: trades, book tickers, liquidations — `btcusdt`, `ethusdt` perps
+- Bybit: liquidations (shift **+200 ms** before feature join)
 
 ```bash
-python scripts/download_data.py --out-dir data/
 export LIQUIDATION_DATA_ROOT=$(pwd)/data
 python scripts/run_baseline.py --symbol btcusdt --max-trades 500000
 ```
@@ -35,7 +36,11 @@ python scripts/run_baseline.py --symbol btcusdt --max-trades 500000
 | **Turnover/day** | `Σ w·(1−f) / days`, `w=min(notional, 100k USD)` |
 | **Constraint** | Turnover/day ≥ **500,000 USD** |
 
-Horizons τ ∈ {30, 120, 300} seconds. Bybit liquidations shifted **+200 ms** before feature join.
+Markout horizons τ ∈ {30, 120, 300} seconds.
+
+## Forecast horizons (direction model)
+
+LGBM trained at **h ∈ {1, 3, 5, 30, 300}s**. **5s** hit rate > **30s** (BTC 0.638 vs 0.560). No **10s** model. PnL table uses **30s** filter — [`docs/FORECAST_HORIZONS.md`](docs/FORECAST_HORIZONS.md).
 
 ## Classifiers
 
@@ -52,10 +57,10 @@ Horizons τ ∈ {30, 120, 300} seconds. Bybit liquidations shifted **+200 ms** b
 CMF_Week_2/
 ├── REVIEWER_GUIDE.md       ← start here
 ├── TASK.md
-├── docs/                   ← features, LGBM params, baseline definition
+├── docs/                   ← features, LGBM params, baseline, forecast horizons
 ├── notebooks/              ← Weekly_Baseline_Report.ipynb
 ├── lib/ + scripts/
-└── results/                ← metrics CSV, lgbm_direction_metrics.json, ROC PNG
+└── results/                ← metrics CSV, direction_horizons_reference.json, ROC PNG
 ```
 
 ## Key results (validation, τ=30s)

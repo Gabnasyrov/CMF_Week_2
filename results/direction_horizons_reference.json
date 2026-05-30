@@ -1,0 +1,24 @@
+{
+  "description": "LGBM no-Kalman hit_rate on test (60%), from research/price_forecast qf_results",
+  "model": "lgbm_no_kalman",
+  "target": "sign(kalman_mu[t+h] - kalman_mu[t])",
+  "split": "40% train / 60% test, ~90 days",
+  "horizons_sec": [1, 3, 5, 30, 300],
+  "note_10s": "No 10s model in training grid; closest horizons are 5s and 30s",
+  "btcusdt": {
+    "1": {"hit_rate": 0.7043, "rank_ic": 0.4087, "n": 48014},
+    "3": {"hit_rate": 0.6647, "rank_ic": 0.3296, "n": 48130},
+    "5": {"hit_rate": 0.6385, "rank_ic": 0.2776, "n": 48191},
+    "30": {"hit_rate": 0.5603, "rank_ic": 0.1206, "n": 48396},
+    "300": {"hit_rate": 0.5120, "rank_ic": 0.0243, "n": 48564}
+  },
+  "ethusdt": {
+    "1": {"hit_rate": 0.6217, "rank_ic": 0.2434, "n": 47600},
+    "3": {"hit_rate": 0.6028, "rank_ic": 0.2057, "n": 47709},
+    "5": {"hit_rate": 0.5873, "rank_ic": 0.1747, "n": 47746},
+    "30": {"hit_rate": 0.5444, "rank_ic": 0.0888, "n": 48084},
+    "300": {"hit_rate": 0.5164, "rank_ic": 0.0331, "n": 48421}
+  },
+  "pnl_strategies_in_deliverable": ["lgbm_nk_30s", "lgbm_nk_300s"],
+  "markout_tau_sec": [30, 120, 300]
+}

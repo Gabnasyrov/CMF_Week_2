@@ -9,11 +9,11 @@ Open files **in this order** to verify inputs → model → metrics → conclusi
 | # | File | What you see |
 |---|------|----------------|
 | 1 | [TASK.md](TASK.md) | Goal, metrics formulas, turnover constraint |
-| 2 | [README.md](README.md) | Quick start, data download link |
+| 2 | [README.md](README.md) | Quick start, data schema |
 | 3 | `notebooks/Weekly_Baseline_Report.ipynb` §1–2 | Polars inventory, sample trades |
 
 **Input data:** Binance trades + BBO + liquidations, Bybit liquidations (+200ms).  
-6-month archive: [Google Drive](https://drive.google.com/file/d/1XmxRsElei-vE8Gc5tkKs2wH4FJVRTevS/view).
+~6 months, `timestamp` in μs UTC, symbols BTCUSDT / ETHUSDT perps. Parquet not in git.
 
 ---
 
@@ -23,8 +23,9 @@ Open files **in this order** to verify inputs → model → metrics → conclusi
 |---|------|----------------|
 | 4 | [docs/FEATURES.md](docs/FEATURES.md) | 21 features for `lgbm_nk_30s` (no Kalman cols) |
 | 5 | [docs/LGBM_PARAMS.md](docs/LGBM_PARAMS.md) | LightGBM hyperparameters |
+| 5b | [docs/FORECAST_HORIZONS.md](docs/FORECAST_HORIZONS.md) | Direction hit rate @ 1–300s; **5s > 30s** |
 
-**Training target:** `sign(kalman_mu[t+30s] − kalman_mu[t])` on 1s panel.  
+**Training target:** `sign(kalman_mu[t+h] − kalman_mu[t])` on 1s panel (h = 30s in bundled PnL).  
 **Normalization:** train-only z-score, clip ±8.
 
 Simple Polars baseline (notebook §4) uses lighter features: Bybit/Binance liq flow 30s, spread — see `lib/filter.py`.
@@ -45,11 +46,14 @@ Simple Polars baseline (notebook §4) uses lighter features: Bybit/Binance liq f
 
 | # | File | What you see |
 |---|------|----------------|
-| 7 | [results/lgbm_direction_metrics.json](results/lgbm_direction_metrics.json) | AUC BTC **0.560**, ETH **0.540**; hit rates |
+| 7 | [results/lgbm_direction_metrics.json](results/lgbm_direction_metrics.json) | AUC BTC **0.560**, ETH **0.540** @ **30s** |
+| 7b | [results/direction_horizons_reference.json](results/direction_horizons_reference.json) | Hit rate all h: **5s** BTC **0.638**, ETH **0.587** |
 | 8 | [results/figures/lgbm_roc_btcusdt_30s.png](results/figures/lgbm_roc_btcusdt_30s.png) | ROC curve BTC |
 | 9 | [results/figures/lgbm_roc_ethusdt_30s.png](results/figures/lgbm_roc_ethusdt_30s.png) | ROC curve ETH |
 
-Regenerate (requires enriched parquet):
+**Shorter horizons:** @ **5s** hit rate beats @ 30s by ~8 pp (BTC). Separate **10s** model is **not** trained (grid: 1, 3, 5, 30, 300s). Bundled **PnL Score** uses **30s** filter only — see `docs/FORECAST_HORIZONS.md`.
+
+Regenerate ROC @ 30s (requires enriched parquet):
 
 ```bash
 export LIQUIDATION_DATA_ROOT=/path/to/data
@@ -76,6 +80,7 @@ python scripts/plot_lgbm_auc.py
 | Finding | Evidence |
 |---------|----------|
 | LGBM beats no-filter on Score @ 30s | BTC +0.065 bps, ETH +0.218 bps vs baseline 0 |
+| Direction @ 5s stronger than @ 30s | `direction_horizons_reference.json` — hit 0.638 vs 0.560 (BTC) |
 | Turnover constraint met | All rows ≥ $500k/day kept (billions in practice) |
 | PnL_filtered < 0 is expected | Filter removes toxic trades |
 | ETH Score > BTC @ 30s | `baseline_metrics_full.csv` |
@@ -89,7 +94,7 @@ raw parquet (Polars load)
     ↓
 1s feature panel (enriched BBO + liq + Hawkes)
     ↓
-LGBM no-K train → direction signal @ 30s
+LGBM no-K train → direction signal @ h (PnL report: h=30s)
     ↓
 asof join signal → each Binance trade
     ↓
@@ -107,11 +112,10 @@ CMF_Week_2/
 ├── REVIEWER_GUIDE.md          ← you are here
 ├── TASK.md
 ├── README.md
-├── docs/                      ← features, params, baseline
+├── docs/                      ← features, params, baseline, forecast horizons
 ├── notebooks/                 ← interactive report
 ├── lib/                       ← Polars baseline code
 ├── scripts/
-│   ├── download_data.py
 │   ├── run_baseline.py
 │   └── plot_lgbm_auc.py
 └── results/                   ← CSV, JSON, figures

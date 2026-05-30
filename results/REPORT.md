@@ -6,10 +6,11 @@ Build a **simple baseline** trade filter on Binance maker flow using liquidation
 
 ## Data
 
-- **Source:** [Google Drive 6-month archive](https://drive.google.com/file/d/1XmxRsElei-vE8Gc5tkKs2wH4FJVRTevS/view)
+- **Period:** ~6 months (train Dec 2025 – Jan 2026, validation Feb 2026)
 - **Loader:** Polars `scan_parquet` (`week_baseline/lib/load_data.py`)
 - **Symbols:** BTCUSDT, ETHUSDT perpetuals
-- **Split:** train Dec 2025 – Jan 2026, validation Feb 2026 (official task)
+- **Streams:** Binance trades, BBO, liquidations; Bybit liquidations (`timestamp` μs UTC; Bybit +200 ms before join)
+- Parquet **not included in git**
 
 ## Classifiers
 
@@ -19,6 +20,17 @@ Build a **simple baseline** trade filter on Binance maker flow using liquidation
 | `heuristic_bybit_flow` | Heuristic | Filter when \|Bybit L_net_30s\| in top quantile |
 | `ml_logistic_toxic` | ML | Logistic regression on liq features; threshold tuned for turnover |
 | `lgbm_nk_30s` | ML (full) | LightGBM from `tz_assignment` — best production baseline |
+
+## Direction forecast horizons
+
+LGBM no-K is trained at **h ∈ {1, 3, 5, 30, 300}s**. Hit rate @ **5s** exceeds @ **30s**:
+
+| h | BTC hit | ETH hit |
+|---|---------|---------|
+| **5s** | **0.638** | **0.587** |
+| 30s | 0.560 | 0.544 |
+
+There is **no 10s** model (nearest: 5s and 30s). Bundled **PnL Score** uses **30s** filter signal; markout τ is separate. Details: `docs/FORECAST_HORIZONS.md`, `results/direction_horizons_reference.json`.
 
 ## Key results (validation, Binance trades, τ=30s)
 
@@ -46,3 +58,4 @@ From `baseline_metrics_full.csv` (PnL in **bps**, turnover in **USD/day**):
 - Extend Polars pipeline to full trade universe (chunked by day)
 - Add cross-impact features from `research/cascade_alpha_v2/`
 - Tune ML threshold on validation only (avoid test leakage)
+- Optional: PnL backtest with `lgbm_nk_5s` filter (higher direction WR, not in current CSV)
