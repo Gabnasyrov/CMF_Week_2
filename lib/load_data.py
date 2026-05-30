@@ -7,7 +7,7 @@ from pathlib import Path
 
 import polars as pl
 
-from config import BYBIT_LATENCY_US, dt_to_us, paths_for_symbol
+from ..config import BYBIT_LATENCY_US, dt_to_us, paths_for_symbol
 
 
 def _scan_parquet(path: Path, t0_us: int | None, t1_us: int | None) -> pl.LazyFrame:

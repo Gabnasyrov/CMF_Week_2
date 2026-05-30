@@ -9,6 +9,8 @@ pip install -r requirements.txt
 jupyter notebook notebooks/Weekly_Baseline_Report.ipynb
 ```
 
+**For reviewers:** read [`REVIEWER_GUIDE.md`](REVIEWER_GUIDE.md) first — step-by-step path through inputs, LGBM, metrics, conclusions.
+
 The notebook runs **without raw data** using bundled results in `results/`.
 
 ## Data (6 months)
@@ -48,20 +50,12 @@ Horizons τ ∈ {30, 120, 300} seconds. Bybit liquidations shifted **+200 ms** b
 
 ```
 CMF_Week_2/
-├── README.md
-├── config.py
-├── lib/                    # Polars loaders, features, markout, filter, metrics
-├── scripts/
-│   ├── download_data.py
-│   └── run_baseline.py
-├── notebooks/
-│   └── Weekly_Baseline_Report.ipynb   ← main report
-├── results/
-│   ├── baseline_metrics_full.csv
-│   ├── baseline_metrics.csv
-│   ├── REPORT.md
-│   └── figures/
-└── data/                   # not in git — download locally
+├── REVIEWER_GUIDE.md       ← start here
+├── TASK.md
+├── docs/                   ← features, LGBM params, baseline definition
+├── notebooks/              ← Weekly_Baseline_Report.ipynb
+├── lib/ + scripts/
+└── results/                ← metrics CSV, lgbm_direction_metrics.json, ROC PNG
 ```
 
 ## Key results (validation, τ=30s)

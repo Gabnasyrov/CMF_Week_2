@@ -33,7 +33,7 @@ From `baseline_metrics_full.csv` (PnL in **bps**, turnover in **USD/day**):
 
 **Turnover is always positive.** Minus in `PnL_filtered` is normal: filtered trades are the toxic ones we remove.
 
-**Turnover constraint (≥$500k/day):** met for all rows.
+**Turnover constraint (≥$500k/day):** met for all rows (kept turnover is billions, not millions).
 
 ## Deliverables
 

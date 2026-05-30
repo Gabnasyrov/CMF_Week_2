@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from config import MIN_TURNOVER_PER_DAY
+from ..config import MIN_TURNOVER_PER_DAY
 
 
 def weighted_mean(x: np.ndarray, w: np.ndarray, mask: np.ndarray | None = None) -> float:

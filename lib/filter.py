@@ -8,8 +8,8 @@ import numpy as np
 import polars as pl
 from sklearn.linear_model import LogisticRegression
 
-from config import MIN_TURNOVER_PER_DAY
-from lib.metrics import evaluate_filter
+from ..config import MIN_TURNOVER_PER_DAY
+from .metrics import evaluate_filter
 
 FEATURE_COLS = (
     "bb_l_net_30s",

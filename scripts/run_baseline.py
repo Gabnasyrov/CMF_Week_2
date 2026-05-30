@@ -11,21 +11,23 @@ from pathlib import Path
 import polars as pl
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT.parent))
 
-from config import (  # noqa: E402
+from week_baseline.config import (  # noqa: E402
     RESULTS,
     SYMBOLS,
     TAUS_SEC,
     TRAIN_END,
     TRAIN_START,
+    VAL_END,
+    VAL_START,
     ensure_dirs,
     has_raw_data,
 )
-from lib.features import attach_bbo_features, attach_liq_features  # noqa: E402
-from lib.filter import classify_trades  # noqa: E402
-from lib.load_data import load_bbo_mid_1s, load_liq_1s, load_trades  # noqa: E402
-from lib.markout import add_markouts  # noqa: E402
+from week_baseline.lib.features import attach_bbo_features, attach_liq_features  # noqa: E402
+from week_baseline.lib.filter import classify_trades  # noqa: E402
+from week_baseline.lib.load_data import load_bbo_mid_1s, load_liq_1s, load_trades  # noqa: E402
+from week_baseline.lib.markout import add_markouts  # noqa: E402
 
 
 def run_symbol(sym: str, max_trades: int | None, t0: datetime, t1: datetime) -> pl.DataFrame:

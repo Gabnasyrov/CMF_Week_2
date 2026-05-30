@@ -7,9 +7,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 PKG_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = PKG_ROOT.parent
+
+_parent_data = (REPO_ROOT / "data").resolve()
 _local_data = (PKG_ROOT / "data").resolve()
 if os.environ.get("LIQUIDATION_DATA_ROOT"):
     DATA = Path(os.environ["LIQUIDATION_DATA_ROOT"]).resolve()
+elif (_local_data / "binance_trades").is_dir():
+    DATA = _local_data
+elif (_parent_data / "binance_trades").is_dir():
+    DATA = _parent_data
 else:
     DATA = _local_data
 

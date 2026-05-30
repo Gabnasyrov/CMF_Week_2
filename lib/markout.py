@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import polars as pl
 
-from config import MAKER_REBATE_BPS, WEIGHT_CAP_USD, TAUS_SEC
+from ..config import MAKER_REBATE_BPS, WEIGHT_CAP_USD, TAUS_SEC
 
 
 def mid_at_sec(mid_sec: np.ndarray, mid_val: np.ndarray, query_sec: np.ndarray) -> np.ndarray:
